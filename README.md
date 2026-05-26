@@ -1,6 +1,12 @@
 # Fitness Tracker
 
-Local React app to register workouts. Data is stored in your browser (`localStorage`).
+React app to register workouts. Data is stored in your browser (`localStorage`).
+
+## Live app (GitHub Pages)
+
+**https://svendandreasen.github.io/FitnessTracker/**
+
+Open that link on your phone or computer. You can use “Add to Home Screen” for quick access.
 
 ## MVP fields
 
@@ -22,3 +28,5 @@ Open the URL shown in the terminal (usually http://localhost:5173).
 npm run build
 npm run preview
 ```
+
+Deployments run automatically when `main` is updated (see `.github/workflows/deploy-pages.yml`).
