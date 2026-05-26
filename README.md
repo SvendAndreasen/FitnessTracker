@@ -2,20 +2,20 @@
 
 React app to register workouts. Data is stored in your browser (`localStorage`).
 
-## Live app (GitHub Pages)
+## Live app
 
 **https://svendandreasen.github.io/FitnessTracker/**
 
-Use that exact URL (including `/FitnessTracker/`). The root `https://svendandreasen.github.io/` will 404.
+## Enable GitHub Pages (one time)
 
-Open on your phone and use **Add to Home Screen** for quick access.
-
-### If you see a 404
+GitHub no longer always shows a “folder” option. Use **GitHub Actions** instead:
 
 1. Open [Settings → Pages](https://github.com/SvendAndreasen/FitnessTracker/settings/pages).
-2. If **Source** is not set, choose **GitHub Actions** (preferred) or **Deploy from branch** → `gh-pages` → `/ (root)`.
-3. Open [Actions](https://github.com/SvendAndreasen/FitnessTracker/actions) and re-run **Deploy to GitHub Pages**.
-4. Wait 1–2 minutes, then reload the live URL.
+2. Under **Build and deployment** → **Source**, choose **GitHub Actions** (not “Deploy from a branch”).
+3. Open [Actions](https://github.com/SvendAndreasen/FitnessTracker/actions) → **Deploy to GitHub Pages** → **Run workflow**.
+4. Wait until the workflow shows a green check, then open the live URL above.
+
+If you already picked a branch, switch **Source** to **GitHub Actions** and run the workflow again.
 
 ## MVP fields
 
@@ -27,11 +27,4 @@ Open on your phone and use **Add to Home Screen** for quick access.
 ```bash
 npm install
 npm run dev
-```
-
-## Build
-
-```bash
-npm run build
-npm run preview
 ```
