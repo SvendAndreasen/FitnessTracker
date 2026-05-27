@@ -204,8 +204,13 @@ export function WorkoutCard({
         <div className="flex flex-wrap items-center gap-2">
           <h3 className="font-semibold text-slate-900">{workout.exerciseName}</h3>
           {isToday && workout.carriedFrom && (
-            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+            <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800">
               From last session
+            </span>
+          )}
+          {isToday && !workout.carriedFrom && (
+            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+              Logged
             </span>
           )}
         </div>
