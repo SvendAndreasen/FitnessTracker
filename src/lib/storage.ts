@@ -38,3 +38,11 @@ export function deleteWorkout(id: string): Workout[] {
   saveWorkouts(workouts)
   return workouts
 }
+
+export function updateWorkout(workout: Workout): Workout[] {
+  const workouts = readRawWorkouts().map((w) =>
+    w.id === workout.id ? workout : w,
+  )
+  saveWorkouts(workouts)
+  return workouts
+}

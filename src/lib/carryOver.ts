@@ -88,9 +88,14 @@ export function hasExerciseOnDate(
   workouts: Workout[],
   date: string,
   exerciseName: string,
+  exceptId?: string,
 ): boolean {
   const key = normalizeExerciseName(exerciseName)
   return workouts.some(
-    (w) => w.date === date && normalizeExerciseName(w.exerciseName) === key,
+    (w) =>
+      w.id !== exceptId &&
+      w.date === date &&
+      normalizeExerciseName(w.exerciseName) === key,
   )
 }
+

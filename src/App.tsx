@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { DailyActivityList } from './components/DailyActivityList'
 import { WorkoutForm } from './components/WorkoutForm'
-import { addWorkout, deleteWorkout, loadWorkouts } from './lib/storage'
+import { addWorkout, deleteWorkout, loadWorkouts, updateWorkout } from './lib/storage'
 import type { Workout } from './types/workout'
 
 function App() {
@@ -15,6 +15,10 @@ function App() {
     setWorkouts(deleteWorkout(id))
   }
 
+  function handleUpdate(workout: Workout) {
+    setWorkouts(updateWorkout(workout))
+  }
+
   return (
     <div className="min-h-screen bg-slate-100 text-slate-900">
       <header className="border-b border-slate-200 bg-white">
@@ -23,14 +27,18 @@ function App() {
             Fitness Tracker
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Each day starts with your last workout. Skip what you skip; add new exercises anytime.
+            Exercises grouped by date. Edit or skip today&apos;s list; past days are read-only.
           </p>
         </div>
       </header>
 
       <main className="mx-auto max-w-3xl space-y-8 px-4 py-8 sm:px-6">
         <section>
-          <DailyActivityList workouts={workouts} onDelete={handleDelete} />
+          <DailyActivityList
+            workouts={workouts}
+            onDelete={handleDelete}
+            onUpdate={handleUpdate}
+          />
         </section>
 
         <WorkoutForm workouts={workouts} onSubmit={handleAdd} />
