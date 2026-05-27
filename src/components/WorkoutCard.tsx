@@ -84,6 +84,7 @@ export function WorkoutCard({
       weight: parseOptionalFloat(weight),
       durationMinutes: parseOptionalInt(durationMinutes),
       notes: notes.trim() || undefined,
+      carriedFrom: undefined,
     })
     setEditing(false)
     setError(null)
