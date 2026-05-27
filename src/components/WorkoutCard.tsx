@@ -21,7 +21,14 @@ export function WorkoutCard({ workout, onDelete }: WorkoutCardProps) {
   return (
     <li className="flex flex-col gap-3 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:flex-row sm:items-start sm:justify-between">
       <div className="min-w-0 flex-1">
-        <h3 className="font-semibold text-slate-900">{workout.exerciseName}</h3>
+        <div className="flex flex-wrap items-center gap-2">
+          <h3 className="font-semibold text-slate-900">{workout.exerciseName}</h3>
+          {workout.carriedFrom && (
+            <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+              From last session
+            </span>
+          )}
+        </div>
         {details.length > 0 && (
           <p className="mt-1 text-sm text-slate-600">{details.join(' · ')}</p>
         )}
@@ -33,8 +40,9 @@ export function WorkoutCard({ workout, onDelete }: WorkoutCardProps) {
         type="button"
         onClick={() => onDelete(workout.id)}
         className="shrink-0 self-start rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700 focus:outline-none focus:ring-2 focus:ring-red-500/30"
+        aria-label={`Remove ${workout.exerciseName}`}
       >
-        Delete
+        Skip
       </button>
     </li>
   )

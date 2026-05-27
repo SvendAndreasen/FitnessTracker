@@ -23,17 +23,17 @@ function App() {
             Fitness Tracker
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Save activities in your browser and review them day by day.
+            Each day starts with your last workout. Skip what you skip; add new exercises anytime.
           </p>
         </div>
       </header>
 
       <main className="mx-auto max-w-3xl space-y-8 px-4 py-8 sm:px-6">
-        <WorkoutForm onSubmit={handleAdd} />
-
         <section>
           <DailyActivityList workouts={workouts} onDelete={handleDelete} />
         </section>
+
+        <WorkoutForm workouts={workouts} onSubmit={handleAdd} />
       </main>
     </div>
   )

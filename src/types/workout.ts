@@ -7,6 +7,8 @@ export type Workout = {
   weight?: number
   durationMinutes?: number
   notes?: string
+  /** ISO date of the session this entry was copied from (carry-over). */
+  carriedFrom?: string
 }
 
 export type WorkoutFormData = {

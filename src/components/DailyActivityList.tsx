@@ -19,7 +19,7 @@ export function DailyActivityList({ workouts, onDelete }: DailyActivityListProps
       <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
         <p className="text-sm font-medium text-slate-700">No activities saved yet</p>
         <p className="mt-1 text-sm text-slate-500">
-          Register a workout above — it will appear under today.
+          Add your first exercise below — it will appear under today.
         </p>
       </div>
     )

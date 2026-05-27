@@ -1,8 +1,9 @@
+import { applyCarryOver } from './carryOver'
 import type { Workout } from '../types/workout'
 
 const STORAGE_KEY = 'fitness-tracker-workouts'
 
-export function loadWorkouts(): Workout[] {
+function readRawWorkouts(): Workout[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return []
@@ -13,18 +14,27 @@ export function loadWorkouts(): Workout[] {
   }
 }
 
+export function loadWorkouts(): Workout[] {
+  const stored = readRawWorkouts()
+  const withCarryOver = applyCarryOver(stored)
+  if (withCarryOver.length !== stored.length) {
+    saveWorkouts(withCarryOver)
+  }
+  return withCarryOver
+}
+
 export function saveWorkouts(workouts: Workout[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(workouts))
 }
 
 export function addWorkout(workout: Workout): Workout[] {
-  const workouts = [workout, ...loadWorkouts()]
+  const workouts = [workout, ...readRawWorkouts()]
   saveWorkouts(workouts)
   return workouts
 }
 
 export function deleteWorkout(id: string): Workout[] {
-  const workouts = loadWorkouts().filter((w) => w.id !== id)
+  const workouts = readRawWorkouts().filter((w) => w.id !== id)
   saveWorkouts(workouts)
   return workouts
 }

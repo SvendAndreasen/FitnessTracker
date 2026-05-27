@@ -1,7 +1,9 @@
 import { useState, type FormEvent } from 'react'
+import { hasExerciseOnDate } from '../lib/carryOver'
 import type { Workout, WorkoutFormData } from '../types/workout'
 
 type WorkoutFormProps = {
+  workouts: Workout[]
   onSubmit: (workout: Workout) => void
 }
 
@@ -29,7 +31,7 @@ function parseOptionalFloat(value: string): number | undefined {
   return Number.isNaN(n) ? undefined : n
 }
 
-export function WorkoutForm({ onSubmit }: WorkoutFormProps) {
+export function WorkoutForm({ workouts, onSubmit }: WorkoutFormProps) {
   const [form, setForm] = useState<WorkoutFormData>(emptyForm)
   const [error, setError] = useState<string | null>(null)
 
@@ -50,6 +52,10 @@ export function WorkoutForm({ onSubmit }: WorkoutFormProps) {
     }
     if (!form.date) {
       setError('Date is required.')
+      return
+    }
+    if (hasExerciseOnDate(workouts, form.date, exerciseName)) {
+      setError('This exercise is already logged for that day. Delete it first to change it.')
       return
     }
 
@@ -75,9 +81,9 @@ export function WorkoutForm({ onSubmit }: WorkoutFormProps) {
       onSubmit={handleSubmit}
       className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
     >
-      <h2 className="text-lg font-semibold text-slate-900">Register activity</h2>
+      <h2 className="text-lg font-semibold text-slate-900">Add exercise</h2>
       <p className="mt-1 text-sm text-slate-500">
-        Saved activities appear under the chosen day. Today is selected by default.
+        Today&apos;s list is filled from your last workout day. Add any new exercises here.
       </p>
 
       {error && (
