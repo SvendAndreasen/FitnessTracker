@@ -14,6 +14,10 @@ function readRawWorkouts(): Workout[] {
   }
 }
 
+export function saveWorkouts(workouts: Workout[]): void {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(workouts))
+}
+
 export function loadWorkouts(): Workout[] {
   const stored = readRawWorkouts()
   const withCarryOver = applyCarryOver(stored)
@@ -23,26 +27,29 @@ export function loadWorkouts(): Workout[] {
   return withCarryOver
 }
 
-export function saveWorkouts(workouts: Workout[]): void {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(workouts))
+export function addWorkoutToList(
+  workouts: Workout[],
+  workout: Workout,
+): Workout[] {
+  const next = [workout, ...workouts]
+  saveWorkouts(next)
+  return next
 }
 
-export function addWorkout(workout: Workout): Workout[] {
-  const workouts = [workout, ...readRawWorkouts()]
-  saveWorkouts(workouts)
-  return workouts
+export function updateWorkoutInList(
+  workouts: Workout[],
+  updated: Workout,
+): Workout[] {
+  const next = workouts.map((w) => (w.id === updated.id ? updated : w))
+  saveWorkouts(next)
+  return next
 }
 
-export function deleteWorkout(id: string): Workout[] {
-  const workouts = readRawWorkouts().filter((w) => w.id !== id)
-  saveWorkouts(workouts)
-  return workouts
-}
-
-export function updateWorkout(workout: Workout): Workout[] {
-  const workouts = readRawWorkouts().map((w) =>
-    w.id === workout.id ? workout : w,
-  )
-  saveWorkouts(workouts)
-  return workouts
+export function deleteWorkoutFromList(
+  workouts: Workout[],
+  id: string,
+): Workout[] {
+  const next = workouts.filter((w) => w.id !== id)
+  saveWorkouts(next)
+  return next
 }

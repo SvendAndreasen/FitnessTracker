@@ -1,22 +1,27 @@
 import { useState } from 'react'
 import { DailyActivityList } from './components/DailyActivityList'
 import { WorkoutForm } from './components/WorkoutForm'
-import { addWorkout, deleteWorkout, loadWorkouts, updateWorkout } from './lib/storage'
+import {
+  addWorkoutToList,
+  deleteWorkoutFromList,
+  loadWorkouts,
+  updateWorkoutInList,
+} from './lib/storage'
 import type { Workout } from './types/workout'
 
 function App() {
   const [workouts, setWorkouts] = useState<Workout[]>(() => loadWorkouts())
 
   function handleAdd(workout: Workout) {
-    setWorkouts(addWorkout(workout))
+    setWorkouts((prev) => addWorkoutToList(prev, workout))
   }
 
   function handleDelete(id: string) {
-    setWorkouts(deleteWorkout(id))
+    setWorkouts((prev) => deleteWorkoutFromList(prev, id))
   }
 
   function handleUpdate(workout: Workout) {
-    setWorkouts(updateWorkout(workout))
+    setWorkouts((prev) => updateWorkoutInList(prev, workout))
   }
 
   return (
