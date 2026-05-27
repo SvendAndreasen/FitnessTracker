@@ -75,9 +75,9 @@ export function WorkoutForm({ onSubmit }: WorkoutFormProps) {
       onSubmit={handleSubmit}
       className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm"
     >
-      <h2 className="text-lg font-semibold text-slate-900">Register workout</h2>
+      <h2 className="text-lg font-semibold text-slate-900">Register activity</h2>
       <p className="mt-1 text-sm text-slate-500">
-        Exercise name and date are required. Other fields are optional.
+        Saved activities appear under the chosen day. Today is selected by default.
       </p>
 
       {error && (
@@ -190,7 +190,7 @@ export function WorkoutForm({ onSubmit }: WorkoutFormProps) {
         type="submit"
         className="mt-6 w-full rounded-lg bg-emerald-600 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 sm:w-auto"
       >
-        Save workout
+        Save activity
       </button>
     </form>
   )

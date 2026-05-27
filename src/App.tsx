@@ -1,6 +1,6 @@
 import { useState } from 'react'
+import { DailyActivityList } from './components/DailyActivityList'
 import { WorkoutForm } from './components/WorkoutForm'
-import { WorkoutList } from './components/WorkoutList'
 import { addWorkout, deleteWorkout, loadWorkouts } from './lib/storage'
 import type { Workout } from './types/workout'
 
@@ -23,7 +23,7 @@ function App() {
             Fitness Tracker
           </h1>
           <p className="mt-1 text-sm text-slate-500">
-            Log workouts locally in your browser.
+            Save activities in your browser and review them day by day.
           </p>
         </div>
       </header>
@@ -32,10 +32,7 @@ function App() {
         <WorkoutForm onSubmit={handleAdd} />
 
         <section>
-          <h2 className="mb-4 text-lg font-semibold text-slate-900">
-            History
-          </h2>
-          <WorkoutList workouts={workouts} onDelete={handleDelete} />
+          <DailyActivityList workouts={workouts} onDelete={handleDelete} />
         </section>
       </main>
     </div>
