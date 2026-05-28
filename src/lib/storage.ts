@@ -14,6 +14,10 @@ function readRawWorkouts(): Workout[] {
   }
 }
 
+export function getAllStoredWorkouts(): Workout[] {
+  return readRawWorkouts()
+}
+
 export function saveWorkouts(workouts: Workout[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(workouts))
 }

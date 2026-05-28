@@ -7,6 +7,7 @@ import { importWorkoutsFromCsv } from './lib/importCsv'
 import {
   addWorkoutToList,
   deleteWorkoutFromList,
+  getAllStoredWorkouts,
   loadWorkouts,
   saveWorkouts,
   updateWorkoutInList,
@@ -31,7 +32,12 @@ function App() {
   }
 
   function handleExport() {
-    downloadWorkoutsCsv(workouts, todayKey())
+    const all = getAllStoredWorkouts()
+    const data = all.length > 0 ? all : workouts
+    const summary = downloadWorkoutsCsv(data, todayKey())
+    setImportMessage(
+      `Exported ${summary.total} rows (${summary.today} today, ${summary.history} in history).`,
+    )
   }
 
   function handleImportClick() {
@@ -110,7 +116,7 @@ function App() {
                 disabled={workouts.length === 0}
                 className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-emerald-200 hover:bg-emerald-50 hover:text-emerald-800 focus:outline-none focus:ring-2 focus:ring-emerald-500/30 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                Export CSV
+                Export all CSV
               </button>
             </div>
           </div>
