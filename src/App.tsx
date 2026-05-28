@@ -131,16 +131,15 @@ function App() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-3xl space-y-8 px-4 py-8 sm:px-6">
-        <section>
-          <DailyActivityList
-            workouts={workouts}
-            onDelete={handleDelete}
-            onUpdate={handleUpdate}
-          />
-        </section>
-
-        <WorkoutForm workouts={workouts} onSubmit={handleAdd} />
+      <main className="mx-auto max-w-3xl px-4 py-8 sm:px-6">
+        <DailyActivityList
+          workouts={workouts}
+          onDelete={handleDelete}
+          onUpdate={handleUpdate}
+          addExerciseForm={
+            <WorkoutForm workouts={workouts} onSubmit={handleAdd} />
+          }
+        />
       </main>
     </div>
   )
