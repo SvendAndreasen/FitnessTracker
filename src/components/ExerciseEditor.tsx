@@ -1,5 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { hasExerciseOnDate } from '../lib/carryOver'
+import { todayKey } from '../lib/dates'
 import { getDescription } from '../lib/normalizeWorkout'
 import {
   formatOptionalFloat,
@@ -21,7 +22,7 @@ function workoutToForm(workout?: Workout): WorkoutFormData {
   if (!workout) {
     return {
       exerciseName: '',
-      date: new Date().toISOString().slice(0, 10),
+      date: todayKey(),
       sets: '',
       reps: '',
       weight: '',

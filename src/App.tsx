@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { ExerciseEditor } from './components/ExerciseEditor'
 import { HistoryView } from './components/HistoryView'
 import { TabBar, type MainTab } from './components/TabBar'
+import { DateNavigator } from './components/DateNavigator'
 import { TodayView } from './components/TodayView'
 import { todayKey } from './lib/dates'
 import { downloadWorkoutsCsv } from './lib/exportCsv'
@@ -35,6 +36,11 @@ function App() {
     setWorkouts((prev) => updateWorkoutInList(prev, workout))
     setEditor(null)
     setActiveTab('today')
+  }
+
+  function refreshForDateChange() {
+    setWorkouts(loadWorkouts())
+    setEditor(null)
   }
 
   function handleDelete(id: string) {
@@ -170,6 +176,7 @@ function App() {
           )
         ) : (
           <div className="space-y-6">
+            <DateNavigator onDateChange={refreshForDateChange} />
             <TabBar active={activeTab} onChange={setActiveTab} />
 
             {activeTab === 'today' ? (
