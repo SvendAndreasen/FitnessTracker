@@ -172,14 +172,13 @@ function App() {
           <div className="space-y-6">
             <TabBar active={activeTab} onChange={setActiveTab} />
 
-            <div
-              id="today-panel"
-              role="tabpanel"
-              aria-labelledby="today-tab"
-              hidden={activeTab !== 'today'}
-              className="min-h-[40vh]"
-            >
-              {activeTab === 'today' && (
+            {activeTab === 'today' ? (
+              <div
+                id="today-panel"
+                role="tabpanel"
+                aria-labelledby="today-tab"
+                className="min-h-[40vh]"
+              >
                 <TodayView
                   workouts={workouts}
                   onAddClick={() => setEditor({ mode: 'add' })}
@@ -188,20 +187,17 @@ function App() {
                   }
                   onDelete={handleDelete}
                 />
-              )}
-            </div>
-
-            <div
-              id="history-panel"
-              role="tabpanel"
-              aria-labelledby="history-tab"
-              hidden={activeTab !== 'history'}
-              className="min-h-[40vh]"
-            >
-              {activeTab === 'history' && (
+              </div>
+            ) : (
+              <div
+                id="history-panel"
+                role="tabpanel"
+                aria-labelledby="history-tab"
+                className="min-h-[40vh]"
+              >
                 <HistoryView workouts={workouts} />
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
       </main>
