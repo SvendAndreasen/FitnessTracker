@@ -4,6 +4,9 @@ React app to register workouts. Data is stored in your browser (`localStorage`).
 
 ## Live app
 
+> **Live site not updating or broken?** See [docs/GITHUB_PAGES.md](docs/GITHUB_PAGES.md) — Pages must **not** use branch `main` as the source.
+
+
 **https://svendandreasen.github.io/FitnessTracker/**
 
 ## Documentation

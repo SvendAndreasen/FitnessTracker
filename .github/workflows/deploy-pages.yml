@@ -1,3 +1,11 @@
+# Builds the app and publishes to the gh-pages branch.
+# In repo Settings → Pages, set Source to "Deploy from a branch":
+#   branch gh-pages, folder / (root)
+# OR set Source to "GitHub Actions" (see optional second job below).
+#
+# Do NOT use branch "main" as the Pages source — that serves unbuilt source
+# and the site will break or show an old version after each push.
+
 name: Deploy to GitHub Pages
 
 on:
@@ -6,7 +14,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -17,6 +25,8 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    outputs:
+      artifact-uploaded: ${{ steps.upload.outputs.artifact-id != '' }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -26,11 +36,17 @@ jobs:
       - run: npm ci
       - run: npm run build
       - run: cp dist/index.html dist/404.html
-      - uses: actions/upload-pages-artifact@v4
+      - name: Publish built app to gh-pages branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./dist
+      - id: upload
+        uses: actions/upload-pages-artifact@v4
         with:
           path: dist
 
-  deploy:
+  deploy-github-actions:
     needs: build
     runs-on: ubuntu-latest
     environment:
