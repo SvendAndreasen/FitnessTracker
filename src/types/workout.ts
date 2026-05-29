@@ -6,8 +6,9 @@ export type Workout = {
   reps?: number
   weight?: number
   durationMinutes?: number
+  description?: string
+  /** @deprecated Use description; kept for older saves and CSV import */
   notes?: string
-  /** ISO date of the session this entry was copied from (carry-over). */
   carriedFrom?: string
 }
 
@@ -18,5 +19,5 @@ export type WorkoutFormData = {
   reps: string
   weight: string
   durationMinutes: string
-  notes: string
+  description: string
 }

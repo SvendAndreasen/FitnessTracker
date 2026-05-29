@@ -1,3 +1,4 @@
+import { getDescription } from './normalizeWorkout'
 import { todayKey } from './dates'
 import type { Workout } from '../types/workout'
 
@@ -37,6 +38,7 @@ function uniqueByExerciseName(workouts: Workout[]): Workout[] {
 }
 
 function copyWorkoutForToday(source: Workout, today: string): Workout {
+  const description = getDescription(source)
   return {
     id: crypto.randomUUID(),
     exerciseName: source.exerciseName,
@@ -45,7 +47,7 @@ function copyWorkoutForToday(source: Workout, today: string): Workout {
     reps: source.reps,
     weight: source.weight,
     durationMinutes: source.durationMinutes,
-    notes: source.notes,
+    description,
     carriedFrom: source.date,
   }
 }

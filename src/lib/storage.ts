@@ -1,4 +1,5 @@
 import { applyCarryOver } from './carryOver'
+import { normalizeWorkouts } from './normalizeWorkout'
 import type { Workout } from '../types/workout'
 
 const STORAGE_KEY = 'fitness-tracker-workouts'
@@ -28,14 +29,14 @@ export function loadWorkouts(): Workout[] {
   if (withCarryOver.length !== stored.length) {
     saveWorkouts(withCarryOver)
   }
-  return withCarryOver
+  return normalizeWorkouts(withCarryOver)
 }
 
 export function addWorkoutToList(
   workouts: Workout[],
   workout: Workout,
 ): Workout[] {
-  const next = [workout, ...workouts]
+  const next = normalizeWorkouts([workout, ...workouts])
   saveWorkouts(next)
   return next
 }
@@ -44,7 +45,9 @@ export function updateWorkoutInList(
   workouts: Workout[],
   updated: Workout,
 ): Workout[] {
-  const next = workouts.map((w) => (w.id === updated.id ? updated : w))
+  const next = normalizeWorkouts(
+    workouts.map((w) => (w.id === updated.id ? updated : w)),
+  )
   saveWorkouts(next)
   return next
 }
@@ -53,7 +56,7 @@ export function deleteWorkoutFromList(
   workouts: Workout[],
   id: string,
 ): Workout[] {
-  const next = workouts.filter((w) => w.id !== id)
+  const next = normalizeWorkouts(workouts.filter((w) => w.id !== id))
   saveWorkouts(next)
   return next
 }
