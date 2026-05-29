@@ -10,6 +10,19 @@ Use this exact URL (including `/FitnessTracker/`).
 
 ---
 
+### “Workflow does not have a trigger for GitHub Pages”
+
+This appears when **Pages → Source** is set to **GitHub Actions**, but GitHub does not see a valid deploy workflow yet.
+
+1. Ensure this file exists on **`main`**: `.github/workflows/deploy-pages.yml`
+2. **Settings** → **Pages** → **Source** → **GitHub Actions**
+3. If asked to pick a workflow, choose **Deploy to GitHub Pages**
+4. Push any commit to `main`, or run **Actions** → **Deploy to GitHub Pages** → **Run workflow**
+
+Do **not** use branch **`main`** as the source. Use **GitHub Actions**, or **Deploy from a branch** with **`gh-pages`** only.
+
+---
+
 ## Site works briefly, then breaks (important)
 
 If the app worked after a deploy but later shows a **blank page**, **404**, or an **old version**, the usual cause is:
