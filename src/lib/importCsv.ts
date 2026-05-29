@@ -72,6 +72,7 @@ const HEADER_MAP: Record<string, keyof RowFields> = {
   weight: 'weight',
   duration_minutes: 'durationMinutes',
   duration: 'durationMinutes',
+  description: 'description',
   notes: 'notes',
   carried_from: 'carriedFrom',
   status: 'status',
@@ -84,6 +85,7 @@ type RowFields = {
   reps: string
   weight: string
   durationMinutes: string
+  description: string
   notes: string
   carriedFrom: string
   status: string
@@ -118,7 +120,7 @@ function rowToWorkout(
     reps: parseOptionalInt(fields.reps ?? ''),
     weight: parseOptionalFloat(fields.weight ?? ''),
     durationMinutes: parseOptionalInt(fields.durationMinutes ?? ''),
-    notes: fields.notes?.trim() || undefined,
+    description: (fields.description ?? fields.notes)?.trim() || undefined,
     carriedFrom: carriedFrom || undefined,
   }
 
