@@ -16,31 +16,25 @@ import {
 } from './lib/storage'
 import type { Workout } from './types/workout'
 
-type Panel =
-  | { type: 'tab'; tab: MainTab }
-  | { type: 'add' }
-  | { type: 'edit'; workoutId: string }
+type EditorPanel = { mode: 'add' } | { mode: 'edit'; workoutId: string }
 
 function App() {
   const [workouts, setWorkouts] = useState<Workout[]>(() => loadWorkouts())
-  const [panel, setPanel] = useState<Panel>({ type: 'tab', tab: 'today' })
+  const [activeTab, setActiveTab] = useState<MainTab>('today')
+  const [editor, setEditor] = useState<EditorPanel | null>(null)
   const [importMessage, setImportMessage] = useState<string | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const showTabBar = panel.type === 'tab'
-
-  function goToTab(tab: MainTab) {
-    setPanel({ type: 'tab', tab })
-  }
-
   function handleAdd(workout: Workout) {
     setWorkouts((prev) => addWorkoutToList(prev, workout))
-    goToTab('today')
+    setEditor(null)
+    setActiveTab('today')
   }
 
   function handleUpdate(workout: Workout) {
     setWorkouts((prev) => updateWorkoutInList(prev, workout))
-    goToTab('today')
+    setEditor(null)
+    setActiveTab('today')
   }
 
   function handleDelete(id: string) {
@@ -54,7 +48,6 @@ function App() {
     setImportMessage(
       `Exported ${summary.total} rows (${summary.today} today, ${summary.history} in history).`,
     )
-    setPanel({ type: 'tab', tab: panel.type === 'tab' ? panel.tab : 'today' })
   }
 
   function handleImportClick() {
@@ -83,15 +76,16 @@ function App() {
         parts.push(result.errors.slice(0, 2).join(' '))
       }
       setImportMessage(parts.join(' ') || 'No rows imported.')
-      goToTab('today')
+      setActiveTab('today')
+      setEditor(null)
     } catch {
       setImportMessage('Could not read the file.')
     }
   }
 
   const editingWorkout =
-    panel.type === 'edit'
-      ? workouts.find((w) => w.id === panel.workoutId)
+    editor?.mode === 'edit'
+      ? workouts.find((w) => w.id === editor.workoutId)
       : undefined
 
   return (
@@ -104,10 +98,10 @@ function App() {
                 Fitness Tracker
               </h1>
               <p className="mt-1 text-sm text-slate-500">
-                Today and history in tabs. Add or edit exercises in their own screen.
+                Use the tabs below to switch between today and history.
               </p>
             </div>
-            {showTabBar && (
+            {!editor && (
               <div className="flex flex-wrap gap-2">
                 <input
                   ref={fileInputRef}
@@ -134,7 +128,7 @@ function App() {
               </div>
             )}
           </div>
-          {importMessage && showTabBar && (
+          {importMessage && !editor && (
             <p
               role="status"
               className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700"
@@ -145,61 +139,72 @@ function App() {
         </div>
       </header>
 
-      <main
-        className={`mx-auto max-w-3xl px-4 py-8 sm:px-6 ${showTabBar ? 'pb-28' : 'pb-8'}`}
-      >
-        {panel.type === 'tab' && panel.tab === 'today' && (
-          <TodayView
-            workouts={workouts}
-            onAddClick={() => setPanel({ type: 'add' })}
-            onEditClick={(w) => setPanel({ type: 'edit', workoutId: w.id })}
-            onDelete={handleDelete}
-          />
-        )}
+      <main className="mx-auto max-w-3xl px-4 py-6 sm:px-6">
+        {editor ? (
+          editor.mode === 'add' ? (
+            <ExerciseEditor
+              mode="add"
+              workouts={workouts}
+              onSave={handleAdd}
+              onClose={() => setEditor(null)}
+            />
+          ) : editingWorkout ? (
+            <ExerciseEditor
+              mode="edit"
+              workouts={workouts}
+              workout={editingWorkout}
+              onSave={handleUpdate}
+              onClose={() => setEditor(null)}
+            />
+          ) : (
+            <div className="text-center text-sm text-slate-500">
+              Exercise not found.{' '}
+              <button
+                type="button"
+                className="font-medium text-emerald-700"
+                onClick={() => setEditor(null)}
+              >
+                Back
+              </button>
+            </div>
+          )
+        ) : (
+          <div className="space-y-6">
+            <TabBar active={activeTab} onChange={setActiveTab} />
 
-        {panel.type === 'tab' && panel.tab === 'history' && (
-          <HistoryView workouts={workouts} />
-        )}
-
-        {panel.type === 'add' && (
-          <ExerciseEditor
-            mode="add"
-            workouts={workouts}
-            onSave={handleAdd}
-            onClose={() => goToTab('today')}
-          />
-        )}
-
-        {panel.type === 'edit' && editingWorkout && (
-          <ExerciseEditor
-            mode="edit"
-            workouts={workouts}
-            workout={editingWorkout}
-            onSave={handleUpdate}
-            onClose={() => goToTab('today')}
-          />
-        )}
-
-        {panel.type === 'edit' && !editingWorkout && (
-          <div className="text-center text-sm text-slate-500">
-            Exercise not found.{' '}
-            <button
-              type="button"
-              className="font-medium text-emerald-700"
-              onClick={() => goToTab('today')}
+            <div
+              id="today-panel"
+              role="tabpanel"
+              aria-labelledby="today-tab"
+              hidden={activeTab !== 'today'}
+              className="min-h-[40vh]"
             >
-              Back to Today
-            </button>
+              {activeTab === 'today' && (
+                <TodayView
+                  workouts={workouts}
+                  onAddClick={() => setEditor({ mode: 'add' })}
+                  onEditClick={(w) =>
+                    setEditor({ mode: 'edit', workoutId: w.id })
+                  }
+                  onDelete={handleDelete}
+                />
+              )}
+            </div>
+
+            <div
+              id="history-panel"
+              role="tabpanel"
+              aria-labelledby="history-tab"
+              hidden={activeTab !== 'history'}
+              className="min-h-[40vh]"
+            >
+              {activeTab === 'history' && (
+                <HistoryView workouts={workouts} />
+              )}
+            </div>
           </div>
         )}
       </main>
-
-      {showTabBar && (
-        <TabBar
-          active={panel.type === 'tab' ? panel.tab : 'today'}
-          onChange={goToTab}
-        />
-      )}
     </div>
   )
 }
