@@ -1,3 +1,4 @@
+import { getDescription } from './normalizeWorkout'
 import type { Workout } from '../types/workout'
 
 function escapeCsvField(value: string): string {
@@ -45,7 +46,7 @@ export function workoutsToCsv(workouts: Workout[], today: string): string {
     'reps',
     'weight_kg',
     'duration_minutes',
-    'notes',
+    'description',
     'status',
     'carried_from',
   ]
@@ -65,7 +66,7 @@ export function workoutsToCsv(workouts: Workout[], today: string): string {
       formatCell(w.reps),
       formatCell(w.weight),
       formatCell(w.durationMinutes),
-      formatCell(w.notes ?? ''),
+      formatCell(getDescription(w) ?? ''),
       formatCell(statusLabel(w, today)),
       formatCell(w.carriedFrom ?? ''),
     ].join(','),
