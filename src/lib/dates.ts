@@ -46,6 +46,10 @@ export function parseDateKey(key: string): Date | null {
   return new Date(y, m - 1, d)
 }
 
+export function isBeforeAppDay(dateKey: string, appDay: string = todayKey()): boolean {
+  return dateKey < appDay
+}
+
 export function shiftDateKey(key: string, days: number): string {
   const date = parseDateKey(key)
   if (!date) return key

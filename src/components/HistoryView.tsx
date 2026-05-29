@@ -1,4 +1,4 @@
-import { formatDayHeading, todayKey } from '../lib/dates'
+import { formatDayHeading, isBeforeAppDay, todayKey } from '../lib/dates'
 import { groupWorkoutsByDay } from '../lib/groupWorkouts'
 import type { Workout } from '../types/workout'
 import { WorkoutCard } from './WorkoutCard'
@@ -10,7 +10,7 @@ type HistoryViewProps = {
 export function HistoryView({ workouts }: HistoryViewProps) {
   const today = todayKey()
   const historyGroups = groupWorkoutsByDay(workouts).filter(
-    (g) => g.date !== today,
+    (g) => isBeforeAppDay(g.date, today),
   )
 
   if (historyGroups.length === 0) {
@@ -18,7 +18,7 @@ export function HistoryView({ workouts }: HistoryViewProps) {
       <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50 p-8 text-center">
         <h2 className="text-lg font-semibold text-slate-900">History</h2>
         <p className="mt-2 text-sm text-slate-500">
-          Past workouts will show up here after you log on another day.
+          Only days before the active day appear here. Log on an earlier day or move back with the date controls.
         </p>
       </div>
     )

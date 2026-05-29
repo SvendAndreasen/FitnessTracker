@@ -1,3 +1,4 @@
+import { isBeforeAppDay } from './dates'
 import { getDescription } from './normalizeWorkout'
 import type { Workout } from '../types/workout'
 
@@ -14,11 +15,13 @@ function formatCell(value: string | number | undefined): string {
 }
 
 function entryType(workout: Workout, today: string): string {
-  return workout.date === today ? 'today' : 'history'
+  if (workout.date === today) return 'today'
+  if (isBeforeAppDay(workout.date, today)) return 'history'
+  return 'future'
 }
 
 function statusLabel(workout: Workout, today: string): string {
-  if (workout.date !== today) return 'History'
+  if (isBeforeAppDay(workout.date, today)) return 'History'
   return workout.carriedFrom ? 'From last session' : 'Logged'
 }
 
@@ -33,7 +36,7 @@ export function summarizeExport(workouts: Workout[], today: string): ExportSumma
   return {
     total: workouts.length,
     today: todayRows.length,
-    history: workouts.length - todayRows.length,
+    history: workouts.filter((w) => isBeforeAppDay(w.date, today)).length,
   }
 }
 
