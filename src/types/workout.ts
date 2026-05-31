@@ -7,9 +7,10 @@ export type Workout = {
   reps?: number
   weight?: number
   durationMinutes?: number
-  /** @deprecated Moved to exercise catalog; kept for migration and CSV import */
+  comment?: string
+  /** @deprecated Moved to exercise catalog; migrated to comment on load */
   description?: string
-  /** @deprecated Use description; kept for older saves and CSV import */
+  /** @deprecated Migrated to comment on load */
   notes?: string
   carriedFrom?: string
 }
@@ -21,5 +22,5 @@ export type WorkoutFormData = {
   reps: string
   weight: string
   durationMinutes: string
-  description: string
+  comment: string
 }

@@ -29,7 +29,7 @@ function workoutToForm(workout?: Workout): WorkoutFormData {
       reps: '',
       weight: '',
       durationMinutes: '',
-      description: '',
+      comment: '',
     }
   }
   return {
@@ -39,7 +39,7 @@ function workoutToForm(workout?: Workout): WorkoutFormData {
     reps: formatOptionalInt(workout.reps),
     weight: formatOptionalFloat(workout.weight),
     durationMinutes: formatOptionalInt(workout.durationMinutes),
-    description: '',
+    comment: workout.comment ?? '',
   }
 }
 
@@ -136,6 +136,7 @@ export function ExerciseEditor({
       reps: parseOptionalInt(form.reps),
       weight: parseOptionalFloat(form.weight),
       durationMinutes: parseOptionalInt(form.durationMinutes),
+      comment: form.comment.trim() || undefined,
       carriedFrom: undefined,
     }
 
@@ -268,10 +269,25 @@ export function ExerciseEditor({
 
         {selectedExercise?.description && (
           <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-sm text-slate-600">
-            <p className="text-xs font-medium text-slate-500">Description</p>
-            <p className="mt-1">{selectedExercise.description}</p>
+            <p className="text-xs font-medium text-slate-500">
+              How to do it (from catalog)
+            </p>
+            <p className="mt-1 whitespace-pre-wrap">{selectedExercise.description}</p>
           </div>
         )}
+
+        <label className="block">
+          <span className="mb-1 block text-sm font-medium text-slate-700">
+            Comment
+          </span>
+          <textarea
+            rows={3}
+            value={form.comment}
+            onChange={(e) => updateField('comment', e.target.value)}
+            className={inputClass}
+            placeholder="Notes for this session (optional)"
+          />
+        </label>
 
         <div className="grid gap-4 sm:grid-cols-2">
           <label className="block">

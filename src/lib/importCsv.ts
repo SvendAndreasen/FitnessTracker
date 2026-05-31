@@ -29,6 +29,8 @@ const HEADER_MAP: Record<string, keyof RowFields> = {
   carried_from: 'carriedFrom',
   status: 'status',
   entry_type: 'entryType',
+  comment: 'comment',
+  notes: 'comment',
 }
 
 type RowFields = {
@@ -42,6 +44,7 @@ type RowFields = {
   carriedFrom: string
   status: string
   entryType: string
+  comment: string
 }
 
 function isValidDate(value: string): boolean {
@@ -107,6 +110,7 @@ function rowToWorkout(
     weight: parseOptionalFloat(fields.weight ?? ''),
     durationMinutes: parseOptionalInt(fields.durationMinutes ?? ''),
     carriedFrom: fields.carriedFrom?.trim() || undefined,
+    comment: fields.comment?.trim() || undefined,
   }
 
   return { workout, exercises: nextExercises }
