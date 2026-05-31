@@ -1,92 +1,106 @@
-import { getDescription } from './normalizeWorkout'
 import { todayKey } from './dates'
+import {
+  addSkippedExerciseId,
+  getSkippedExerciseIds,
+} from './skippedToday'
+import { normalizeExerciseName } from './exerciseNames'
+import type { Exercise } from '../types/exercise'
 import type { Workout } from '../types/workout'
 
 const CARRYOVER_MARKER_KEY = 'fitness-tracker-last-carryover'
 
-export function normalizeExerciseName(name: string): string {
-  return name.trim().toLowerCase()
-}
+export { normalizeExerciseName }
 
-function lastLoggedDateBefore(
+function lastWorkoutForExerciseBefore(
+  exerciseId: string,
   beforeDate: string,
   workouts: Workout[],
-): string | null {
-  const dates = [
-    ...new Set(
-      workouts
-        .map((w) => w.date)
-        .filter((d) => d < beforeDate),
-    ),
-  ].sort((a, b) => b.localeCompare(a))
+): Workout | null {
+  const history = workouts
+    .filter((w) => w.exerciseId === exerciseId && w.date < beforeDate)
+    .sort((a, b) => b.date.localeCompare(a.date))
 
-  return dates[0] ?? null
+  return history[0] ?? null
 }
 
-function uniqueByExerciseName(workouts: Workout[]): Workout[] {
-  const seen = new Set<string>()
-  const result: Workout[] = []
-
-  for (const workout of workouts) {
-    const key = normalizeExerciseName(workout.exerciseName)
-    if (seen.has(key)) continue
-    seen.add(key)
-    result.push(workout)
-  }
-
-  return result
-}
-
-function copyWorkoutForToday(source: Workout, today: string): Workout {
-  const description = getDescription(source)
+function copyValuesFromHistory(
+  exercise: Exercise,
+  source: Workout | null,
+  today: string,
+): Workout {
   return {
     id: crypto.randomUUID(),
-    exerciseName: source.exerciseName,
+    exerciseId: exercise.id,
+    exerciseName: exercise.name,
     date: today,
-    sets: source.sets,
-    reps: source.reps,
-    weight: source.weight,
-    durationMinutes: source.durationMinutes,
-    description,
-    carriedFrom: source.date,
+    sets: source?.sets,
+    reps: source?.reps,
+    weight: source?.weight,
+    durationMinutes: source?.durationMinutes,
+    carriedFrom: source?.date,
   }
-}
-
-function carryOverDoneFor(today: string): boolean {
-  return localStorage.getItem(CARRYOVER_MARKER_KEY) === today
 }
 
 function markCarryOverDone(today: string): void {
   localStorage.setItem(CARRYOVER_MARKER_KEY, today)
 }
 
-export function applyCarryOver(workouts: Workout[]): Workout[] {
+export function applyCarryOver(
+  workouts: Workout[],
+  exercises: Exercise[],
+): Workout[] {
   const today = todayKey()
-
-  if (carryOverDoneFor(today)) {
-    return workouts
-  }
-
-  if (workouts.some((w) => w.date === today)) {
+  const active = exercises.filter((e) => e.active)
+  if (active.length === 0) {
     markCarryOverDone(today)
     return workouts
   }
 
-  const sourceDate = lastLoggedDateBefore(today, workouts)
-  markCarryOverDone(today)
-
-  if (!sourceDate) {
-    return workouts
+  const skipped = new Set(getSkippedExerciseIds(today))
+  const todayByExerciseId = new Map<string, Workout>()
+  for (const workout of workouts) {
+    if (workout.date === today && workout.exerciseId) {
+      todayByExerciseId.set(workout.exerciseId, workout)
+    }
   }
 
-  const sourceDay = workouts.filter((w) => w.date === sourceDate)
-  const templates = uniqueByExerciseName(sourceDay)
-  const copied = templates.map((w) => copyWorkoutForToday(w, today))
+  const added: Workout[] = []
+  const synced = workouts.map((workout) => {
+    if (workout.date !== today || !workout.exerciseId) return workout
+    const exercise = exercises.find((e) => e.id === workout.exerciseId)
+    if (!exercise) return workout
+    if (workout.exerciseName === exercise.name) return workout
+    return { ...workout, exerciseName: exercise.name }
+  })
 
-  return [...copied, ...workouts]
+  for (const exercise of active) {
+    if (skipped.has(exercise.id)) continue
+    if (todayByExerciseId.has(exercise.id)) continue
+
+    const last = lastWorkoutForExerciseBefore(exercise.id, today, workouts)
+    added.push(copyValuesFromHistory(exercise, last, today))
+  }
+
+  markCarryOverDone(today)
+  if (added.length === 0) {
+    return synced
+  }
+  return [...added, ...synced]
 }
 
 export function hasExerciseOnDate(
+  workouts: Workout[],
+  date: string,
+  exerciseId: string,
+  exceptId?: string,
+): boolean {
+  return workouts.some(
+    (w) =>
+      w.id !== exceptId && w.date === date && w.exerciseId === exerciseId,
+  )
+}
+
+export function hasExerciseNameOnDate(
   workouts: Workout[],
   date: string,
   exerciseName: string,
@@ -101,3 +115,8 @@ export function hasExerciseOnDate(
   )
 }
 
+export function skipWorkoutForToday(workout: Workout): void {
+  if (workout.exerciseId) {
+    addSkippedExerciseId(workout.exerciseId, workout.date)
+  }
+}

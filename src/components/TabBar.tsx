@@ -1,4 +1,4 @@
-export type MainTab = 'today' | 'history'
+export type MainTab = 'today' | 'history' | 'exercises'
 
 type TabBarProps = {
   active: MainTab
@@ -30,6 +30,17 @@ export function TabBar({ active, onChange }: TabBarProps) {
           onClick={() => onChange('today')}
         >
           Today
+        </button>
+        <button
+          type="button"
+          role="tab"
+          aria-selected={active === 'exercises'}
+          aria-controls="exercises-panel"
+          id="exercises-tab"
+          className={tabClass('exercises')}
+          onClick={() => onChange('exercises')}
+        >
+          Exercises
         </button>
         <button
           type="button"

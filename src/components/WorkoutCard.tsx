@@ -1,8 +1,8 @@
-import { getDescription } from '../lib/normalizeWorkout'
 import type { Workout } from '../types/workout'
 
 type WorkoutCardProps = {
   workout: Workout
+  description?: string
   isToday: boolean
   onOpen?: () => void
   onDelete?: (id: string) => void
@@ -20,12 +20,12 @@ function detailParts(workout: Workout): string[] {
 
 export function WorkoutCard({
   workout,
+  description,
   isToday,
   onOpen,
   onDelete,
 }: WorkoutCardProps) {
   const details = detailParts(workout)
-  const description = getDescription(workout)
 
   return (
     <li className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">

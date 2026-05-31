@@ -1,18 +1,6 @@
+import { formatCsvCell } from './csvParse'
 import { isBeforeAppDay } from './dates'
-import { getDescription } from './normalizeWorkout'
 import type { Workout } from '../types/workout'
-
-function escapeCsvField(value: string): string {
-  if (/[",\n\r]/.test(value)) {
-    return `"${value.replace(/"/g, '""')}"`
-  }
-  return value
-}
-
-function formatCell(value: string | number | undefined): string {
-  if (value == null || value === '') return ''
-  return escapeCsvField(String(value))
-}
 
 function entryType(workout: Workout, today: string): string {
   if (workout.date === today) return 'today'
@@ -44,12 +32,12 @@ export function workoutsToCsv(workouts: Workout[], today: string): string {
   const headers = [
     'date',
     'entry_type',
+    'exercise_id',
     'exercise_name',
     'sets',
     'reps',
     'weight_kg',
     'duration_minutes',
-    'description',
     'status',
     'carried_from',
   ]
@@ -62,16 +50,16 @@ export function workoutsToCsv(workouts: Workout[], today: string): string {
 
   const rows = sorted.map((w) =>
     [
-      formatCell(w.date),
-      formatCell(entryType(w, today)),
-      formatCell(w.exerciseName),
-      formatCell(w.sets),
-      formatCell(w.reps),
-      formatCell(w.weight),
-      formatCell(w.durationMinutes),
-      formatCell(getDescription(w) ?? ''),
-      formatCell(statusLabel(w, today)),
-      formatCell(w.carriedFrom ?? ''),
+      formatCsvCell(w.date),
+      formatCsvCell(entryType(w, today)),
+      formatCsvCell(w.exerciseId),
+      formatCsvCell(w.exerciseName),
+      formatCsvCell(w.sets),
+      formatCsvCell(w.reps),
+      formatCsvCell(w.weight),
+      formatCsvCell(w.durationMinutes),
+      formatCsvCell(statusLabel(w, today)),
+      formatCsvCell(w.carriedFrom ?? ''),
     ].join(','),
   )
 
@@ -87,7 +75,7 @@ export function downloadWorkoutsCsv(
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
-  link.download = `fitness-tracker-all-${today}.csv`
+  link.download = `fitness-tracker-logs-${today}.csv`
   link.click()
   URL.revokeObjectURL(url)
   return summarizeExport(workouts, today)

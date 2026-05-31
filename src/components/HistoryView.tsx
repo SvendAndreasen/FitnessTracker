@@ -1,13 +1,16 @@
 import { formatDayHeading, isBeforeAppDay, todayKey } from '../lib/dates'
+import { findExerciseById } from '../lib/exerciseStorage'
 import { groupWorkoutsByDay } from '../lib/groupWorkouts'
+import type { Exercise } from '../types/exercise'
 import type { Workout } from '../types/workout'
 import { WorkoutCard } from './WorkoutCard'
 
 type HistoryViewProps = {
   workouts: Workout[]
+  exercises: Exercise[]
 }
 
-export function HistoryView({ workouts }: HistoryViewProps) {
+export function HistoryView({ workouts, exercises }: HistoryViewProps) {
   const today = todayKey()
   const historyGroups = groupWorkoutsByDay(workouts).filter(
     (g) => isBeforeAppDay(g.date, today),
@@ -37,9 +40,19 @@ export function HistoryView({ workouts }: HistoryViewProps) {
             </span>
           </h3>
           <ul className="space-y-3">
-            {group.workouts.map((workout) => (
-              <WorkoutCard key={workout.id} workout={workout} isToday={false} />
-            ))}
+            {group.workouts.map((workout) => {
+              const exercise = workout.exerciseId
+                ? findExerciseById(exercises, workout.exerciseId)
+                : undefined
+              return (
+                <WorkoutCard
+                  key={workout.id}
+                  workout={workout}
+                  description={exercise?.description}
+                  isToday={false}
+                />
+              )
+            })}
           </ul>
         </section>
       ))}
