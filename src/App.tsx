@@ -1,32 +1,67 @@
 import { useRef, useState } from 'react'
 import { ExerciseEditor } from './components/ExerciseEditor'
+import { ExercisesView } from './components/ExercisesView'
 import { HistoryView } from './components/HistoryView'
 import { TabBar, type MainTab } from './components/TabBar'
 import { DateNavigator } from './components/DateNavigator'
 import { TodayView } from './components/TodayView'
+import { loadAppData } from './lib/appData'
+import { skipWorkoutForToday } from './lib/carryOver'
 import { todayKey } from './lib/dates'
+import { findOrCreateExerciseByName } from './lib/ensureExercise'
+import {
+  addExerciseToList,
+  saveExercises,
+  updateExerciseInList,
+  deleteExerciseFromList,
+} from './lib/exerciseStorage'
 import { downloadWorkoutsCsv } from './lib/exportCsv'
 import { importWorkoutsFromCsv } from './lib/importCsv'
 import {
   addWorkoutToList,
   deleteWorkoutFromList,
   getAllStoredWorkouts,
-  loadWorkouts,
   saveWorkouts,
   updateWorkoutInList,
 } from './lib/storage'
+import { removeSkippedExerciseId } from './lib/skippedToday'
+import type { Exercise } from './types/exercise'
 import type { Workout } from './types/workout'
 
 type EditorPanel = { mode: 'add' } | { mode: 'edit'; workoutId: string }
 
 function App() {
-  const [workouts, setWorkouts] = useState<Workout[]>(() => loadWorkouts())
+  const [workouts, setWorkouts] = useState<Workout[]>(() => loadAppData().workouts)
+  const [exercises, setExercises] = useState<Exercise[]>(
+    () => loadAppData().exercises,
+  )
   const [activeTab, setActiveTab] = useState<MainTab>('today')
   const [editor, setEditor] = useState<EditorPanel | null>(null)
-  const [importMessage, setImportMessage] = useState<string | null>(null)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [statusMessage, setStatusMessage] = useState<string | null>(null)
+  const logsFileInputRef = useRef<HTMLInputElement>(null)
 
-  function handleAdd(workout: Workout) {
+  function reloadAppData() {
+    const data = loadAppData()
+    setWorkouts(data.workouts)
+    setExercises(data.exercises)
+  }
+
+  function handleAdd(workout: Workout, newExercise?: Exercise) {
+    let nextExercises = exercises
+    if (newExercise) {
+      nextExercises = addExerciseToList(exercises, newExercise)
+      workout.exerciseId = newExercise.id
+      workout.exerciseName = newExercise.name
+    } else if (!workout.exerciseId) {
+      const result = findOrCreateExerciseByName(exercises, workout.exerciseName, {
+        active: true,
+      })
+      nextExercises = result.exercises
+      workout.exerciseId = result.exercise.id
+      workout.exerciseName = result.exercise.name
+    }
+    removeSkippedExerciseId(workout.exerciseId, workout.date)
+    setExercises(nextExercises)
     setWorkouts((prev) => addWorkoutToList(prev, workout))
     setEditor(null)
     setActiveTab('today')
@@ -39,41 +74,71 @@ function App() {
   }
 
   function refreshForDateChange() {
-    setWorkouts(loadWorkouts())
+    reloadAppData()
     setEditor(null)
   }
 
   function handleDelete(id: string) {
+    const workout = workouts.find((w) => w.id === id)
+    if (workout) {
+      skipWorkoutForToday(workout)
+    }
     setWorkouts((prev) => deleteWorkoutFromList(prev, id))
   }
 
-  function handleExport() {
+  function handleCatalogAdd(exercise: Exercise) {
+    setExercises((prev) => addExerciseToList(prev, exercise))
+    reloadAppData()
+    setActiveTab('today')
+  }
+
+  function handleCatalogUpdate(exercise: Exercise) {
+    setExercises((prev) => updateExerciseInList(prev, exercise))
+    reloadAppData()
+  }
+
+  function handleCatalogDelete(id: string) {
+    setExercises((prev) => deleteExerciseFromList(prev, id))
+    reloadAppData()
+  }
+
+  function handleCatalogImport(next: Exercise[]) {
+    saveExercises(next)
+    setExercises(next)
+    reloadAppData()
+    setActiveTab('exercises')
+  }
+
+  function handleExportLogs() {
     const all = getAllStoredWorkouts()
     const data = all.length > 0 ? all : workouts
     const summary = downloadWorkoutsCsv(data, todayKey())
-    setImportMessage(
-      `Exported ${summary.total} rows (${summary.today} today, ${summary.history} in history).`,
+    setStatusMessage(
+      `Exported logs: ${summary.total} rows (${summary.today} today, ${summary.history} in history).`,
     )
   }
 
-  function handleImportClick() {
-    setImportMessage(null)
-    fileInputRef.current?.click()
+  function handleImportLogsClick() {
+    setStatusMessage(null)
+    logsFileInputRef.current?.click()
   }
 
-  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+  async function handleLogsFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     e.target.value = ''
     if (!file) return
 
     try {
       const text = await file.text()
-      const result = importWorkoutsFromCsv(text, workouts)
+      const result = importWorkoutsFromCsv(text, workouts, exercises)
       saveWorkouts(result.workouts)
+      saveExercises(result.exercises)
       setWorkouts(result.workouts)
+      setExercises(result.exercises)
+      reloadAppData()
       const parts: string[] = []
       if (result.added > 0) {
-        parts.push(`Imported ${result.added} exercise${result.added === 1 ? '' : 's'}.`)
+        parts.push(`Imported ${result.added} log row${result.added === 1 ? '' : 's'}.`)
       }
       if (result.skipped > 0) {
         parts.push(`Skipped ${result.skipped} duplicate(s).`)
@@ -81,11 +146,11 @@ function App() {
       if (result.errors.length > 0) {
         parts.push(result.errors.slice(0, 2).join(' '))
       }
-      setImportMessage(parts.join(' ') || 'No rows imported.')
+      setStatusMessage(parts.join(' ') || 'No log rows imported.')
       setActiveTab('today')
       setEditor(null)
     } catch {
-      setImportMessage('Could not read the file.')
+      setStatusMessage('Could not read the log file.')
     }
   }
 
@@ -104,42 +169,42 @@ function App() {
                 Fitness Tracker
               </h1>
               <p className="mt-1 text-sm text-slate-500">
-                Use the tabs below to switch between today and history.
+                Today shows active exercises; values come from your last session.
               </p>
             </div>
             {!editor && (
               <div className="flex flex-wrap gap-2">
                 <input
-                  ref={fileInputRef}
+                  ref={logsFileInputRef}
                   type="file"
                   accept=".csv,text/csv"
                   className="hidden"
-                  onChange={handleFileChange}
+                  onChange={handleLogsFileChange}
                 />
                 <button
                   type="button"
-                  onClick={handleImportClick}
+                  onClick={handleImportLogsClick}
                   className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-emerald-50"
                 >
-                  Import
+                  Import logs
                 </button>
                 <button
                   type="button"
-                  onClick={handleExport}
+                  onClick={handleExportLogs}
                   disabled={workouts.length === 0}
                   className="rounded-lg border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 hover:bg-emerald-50 disabled:opacity-50"
                 >
-                  Export
+                  Export logs
                 </button>
               </div>
             )}
           </div>
-          {importMessage && !editor && (
+          {statusMessage && !editor && (
             <p
               role="status"
               className="mt-4 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-700"
             >
-              {importMessage}
+              {statusMessage}
             </p>
           )}
         </div>
@@ -151,6 +216,7 @@ function App() {
             <ExerciseEditor
               mode="add"
               workouts={workouts}
+              exercises={exercises}
               onSave={handleAdd}
               onClose={() => setEditor(null)}
             />
@@ -158,6 +224,7 @@ function App() {
             <ExerciseEditor
               mode="edit"
               workouts={workouts}
+              exercises={exercises}
               workout={editingWorkout}
               onSave={handleUpdate}
               onClose={() => setEditor(null)}
@@ -188,11 +255,28 @@ function App() {
               >
                 <TodayView
                   workouts={workouts}
+                  exercises={exercises}
                   onAddClick={() => setEditor({ mode: 'add' })}
                   onEditClick={(w) =>
                     setEditor({ mode: 'edit', workoutId: w.id })
                   }
                   onDelete={handleDelete}
+                />
+              </div>
+            ) : activeTab === 'exercises' ? (
+              <div
+                id="exercises-panel"
+                role="tabpanel"
+                aria-labelledby="exercises-tab"
+                className="min-h-[40vh]"
+              >
+                <ExercisesView
+                  exercises={exercises}
+                  onAdd={handleCatalogAdd}
+                  onUpdate={handleCatalogUpdate}
+                  onDelete={handleCatalogDelete}
+                  onImportCatalog={handleCatalogImport}
+                  onStatusMessage={setStatusMessage}
                 />
               </div>
             ) : (
@@ -202,7 +286,7 @@ function App() {
                 aria-labelledby="history-tab"
                 className="min-h-[40vh]"
               >
-                <HistoryView workouts={workouts} />
+                <HistoryView workouts={workouts} exercises={exercises} />
               </div>
             )}
           </div>

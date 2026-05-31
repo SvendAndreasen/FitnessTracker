@@ -1,4 +1,3 @@
-import { applyCarryOver } from './carryOver'
 import { normalizeWorkouts } from './normalizeWorkout'
 import type { Workout } from '../types/workout'
 
@@ -21,15 +20,6 @@ export function getAllStoredWorkouts(): Workout[] {
 
 export function saveWorkouts(workouts: Workout[]): void {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(workouts))
-}
-
-export function loadWorkouts(): Workout[] {
-  const stored = readRawWorkouts()
-  const withCarryOver = applyCarryOver(stored)
-  if (withCarryOver.length !== stored.length) {
-    saveWorkouts(withCarryOver)
-  }
-  return normalizeWorkouts(withCarryOver)
 }
 
 export function addWorkoutToList(
