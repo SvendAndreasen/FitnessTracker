@@ -7,7 +7,8 @@ import { DateNavigator } from './components/DateNavigator'
 import { TodayView } from './components/TodayView'
 import { loadAppData } from './lib/appData'
 import { skipWorkoutForToday } from './lib/carryOver'
-import { todayKey } from './lib/dates'
+import { isBeforeAppDay, todayKey } from './lib/dates'
+import { addSkippedExerciseId } from './lib/skippedToday'
 import { findOrCreateExerciseByName } from './lib/ensureExercise'
 import {
   addExerciseToList,
@@ -28,7 +29,9 @@ import { removeSkippedExerciseId } from './lib/skippedToday'
 import type { Exercise } from './types/exercise'
 import type { Workout } from './types/workout'
 
-type EditorPanel = { mode: 'add' } | { mode: 'edit'; workoutId: string }
+type EditorPanel =
+  | { mode: 'add'; exerciseId?: string }
+  | { mode: 'edit'; workoutId: string }
 
 function App() {
   const [workouts, setWorkouts] = useState<Workout[]>(() => loadAppData().workouts)
@@ -70,7 +73,7 @@ function App() {
   function handleUpdate(workout: Workout) {
     setWorkouts((prev) => updateWorkoutInList(prev, workout))
     setEditor(null)
-    setActiveTab('today')
+    setActiveTab(isBeforeAppDay(workout.date, todayKey()) ? 'history' : 'today')
   }
 
   function refreshForDateChange() {
@@ -78,12 +81,17 @@ function App() {
     setEditor(null)
   }
 
-  function handleDelete(id: string) {
-    const workout = workouts.find((w) => w.id === id)
+  function handleSkipActiveExercise(exerciseId: string) {
+    const today = todayKey()
+    const workout = workouts.find(
+      (w) => w.date === today && w.exerciseId === exerciseId,
+    )
     if (workout) {
       skipWorkoutForToday(workout)
+      setWorkouts((prev) => deleteWorkoutFromList(prev, workout.id))
+    } else {
+      addSkippedExerciseId(exerciseId, today)
     }
-    setWorkouts((prev) => deleteWorkoutFromList(prev, id))
   }
 
   function handleCatalogAdd(exercise: Exercise) {
@@ -217,6 +225,7 @@ function App() {
               mode="add"
               workouts={workouts}
               exercises={exercises}
+              initialExerciseId={editor.exerciseId}
               onSave={handleAdd}
               onClose={() => setEditor(null)}
             />
@@ -257,10 +266,13 @@ function App() {
                   workouts={workouts}
                   exercises={exercises}
                   onAddClick={() => setEditor({ mode: 'add' })}
-                  onEditClick={(w) =>
+                  onEditWorkout={(w) =>
                     setEditor({ mode: 'edit', workoutId: w.id })
                   }
-                  onDelete={handleDelete}
+                  onStartExercise={(exerciseId) =>
+                    setEditor({ mode: 'add', exerciseId })
+                  }
+                  onSkipExercise={handleSkipActiveExercise}
                 />
               </div>
             ) : activeTab === 'exercises' ? (
@@ -286,7 +298,13 @@ function App() {
                 aria-labelledby="history-tab"
                 className="min-h-[40vh]"
               >
-                <HistoryView workouts={workouts} exercises={exercises} />
+                <HistoryView
+                  workouts={workouts}
+                  exercises={exercises}
+                  onEditWorkout={(w) =>
+                    setEditor({ mode: 'edit', workoutId: w.id })
+                  }
+                />
               </div>
             )}
           </div>

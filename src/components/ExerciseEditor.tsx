@@ -1,6 +1,6 @@
 import { useMemo, useState, type FormEvent } from 'react'
 import { hasExerciseOnDate } from '../lib/carryOver'
-import { todayKey } from '../lib/dates'
+import { isBeforeAppDay, todayKey } from '../lib/dates'
 import { findExerciseById } from '../lib/exerciseStorage'
 import {
   formatOptionalFloat,
@@ -16,6 +16,7 @@ type ExerciseEditorProps = {
   workouts: Workout[]
   exercises: Exercise[]
   workout?: Workout
+  initialExerciseId?: string
   onSave: (workout: Workout, exercise?: Exercise) => void
   onClose: () => void
 }
@@ -48,15 +49,19 @@ export function ExerciseEditor({
   workouts,
   exercises,
   workout,
+  initialExerciseId,
   onSave,
   onClose,
 }: ExerciseEditorProps) {
   const [form, setForm] = useState<WorkoutFormData>(() => workoutToForm(workout))
   const [selectedExerciseId, setSelectedExerciseId] = useState<string>(() => {
     if (workout?.exerciseId) return workout.exerciseId
+    if (initialExerciseId) return initialExerciseId
     return ''
   })
-  const [useNewName, setUseNewName] = useState(mode === 'add' && !workout)
+  const [useNewName, setUseNewName] = useState(
+    mode === 'add' && !workout && !initialExerciseId,
+  )
   const [error, setError] = useState<string | null>(null)
 
   const catalogSorted = useMemo(
@@ -68,14 +73,12 @@ export function ExerciseEditor({
   )
 
   const selectedExercise = useMemo(() => {
-    if (mode === 'edit' && workout?.exerciseId) {
-      return findExerciseById(exercises, workout.exerciseId)
-    }
     if (useNewName) return undefined
-    return selectedExerciseId
-      ? findExerciseById(exercises, selectedExerciseId)
-      : undefined
-  }, [mode, workout, exercises, useNewName, selectedExerciseId])
+    if (selectedExerciseId) {
+      return findExerciseById(exercises, selectedExerciseId)
+    }
+    return undefined
+  }, [exercises, useNewName, selectedExerciseId])
 
   const inputClass =
     'w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 placeholder:text-slate-400 focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/30'
@@ -88,16 +91,45 @@ export function ExerciseEditor({
     setError(null)
   }
 
+  function catalogPicker() {
+    return (
+      <label className="block">
+        <span className="mb-1 block text-sm font-medium text-slate-700">
+          Exercise from catalog *
+        </span>
+        <select
+          value={selectedExerciseId}
+          onChange={(e) => {
+            setSelectedExerciseId(e.target.value)
+            setError(null)
+          }}
+          className={inputClass}
+        >
+          <option value="">Select…</option>
+          {catalogSorted.map((exercise) => (
+            <option key={exercise.id} value={exercise.id}>
+              {exercise.name}
+              {!exercise.active ? ' (inactive)' : ''}
+            </option>
+          ))}
+        </select>
+        {mode === 'edit' && (
+          <p className="mt-1 text-xs text-slate-500">
+            Link this log to the correct catalog exercise so future carry-over
+            finds the right history.
+          </p>
+        )}
+      </label>
+    )
+  }
+
   function handleSubmit(e: FormEvent) {
     e.preventDefault()
 
-    let exerciseId = workout?.exerciseId ?? ''
+    let exerciseId = ''
     let exerciseName = form.exerciseName.trim()
 
-    if (mode === 'edit' && workout) {
-      exerciseId = workout.exerciseId
-      exerciseName = workout.exerciseName
-    } else if (useNewName) {
+    if (useNewName) {
       if (!exerciseName) {
         setError('Exercise name is required.')
         return
@@ -123,7 +155,7 @@ export function ExerciseEditor({
 
     const exceptId = mode === 'edit' && workout ? workout.id : undefined
     if (exerciseId && hasExerciseOnDate(workouts, form.date, exerciseId, exceptId)) {
-      setError('This exercise is already on that day.')
+      setError('This exercise is already logged for that day.')
       return
     }
 
@@ -137,7 +169,10 @@ export function ExerciseEditor({
       weight: parseOptionalFloat(form.weight),
       durationMinutes: parseOptionalInt(form.durationMinutes),
       comment: form.comment.trim() || undefined,
-      carriedFrom: undefined,
+      carriedFrom:
+        mode === 'edit' && workout?.carriedFrom && exerciseId === workout.exerciseId
+          ? workout.carriedFrom
+          : undefined,
     }
 
     const newExercise =
@@ -156,6 +191,9 @@ export function ExerciseEditor({
     onSave(saved, newExercise)
   }
 
+  const isHistoryEdit =
+    mode === 'edit' && workout && isBeforeAppDay(workout.date, todayKey())
+
   return (
     <div className="pb-8">
       <div className="mb-6 flex items-center gap-3">
@@ -167,7 +205,7 @@ export function ExerciseEditor({
           Back
         </button>
         <h2 className="text-lg font-semibold text-slate-900">
-          {mode === 'add' ? 'Log exercise' : 'Edit log'}
+          {mode === 'add' ? 'Log exercise' : isHistoryEdit ? 'Edit history' : 'Edit log'}
         </h2>
       </div>
 
@@ -185,15 +223,7 @@ export function ExerciseEditor({
         )}
 
         {mode === 'edit' ? (
-          <div>
-            <p className="text-sm font-medium text-slate-700">Exercise</p>
-            <p className="mt-1 text-lg font-semibold text-slate-900">
-              {workout?.exerciseName}
-            </p>
-            <p className="mt-1 text-xs text-slate-500">
-              Change the name in the Exercises tab.
-            </p>
-          </div>
+          catalogPicker()
         ) : (
           <div className="space-y-4">
             <div className="flex flex-wrap gap-2">
@@ -242,27 +272,7 @@ export function ExerciseEditor({
                 />
               </label>
             ) : (
-              <label className="block">
-                <span className="mb-1 block text-sm font-medium text-slate-700">
-                  Exercise *
-                </span>
-                <select
-                  value={selectedExerciseId}
-                  onChange={(e) => {
-                    setSelectedExerciseId(e.target.value)
-                    setError(null)
-                  }}
-                  className={inputClass}
-                >
-                  <option value="">Select…</option>
-                  {catalogSorted.map((exercise) => (
-                    <option key={exercise.id} value={exercise.id}>
-                      {exercise.name}
-                      {!exercise.active ? ' (inactive)' : ''}
-                    </option>
-                  ))}
-                </select>
-              </label>
+              catalogPicker()
             )}
           </div>
         )}

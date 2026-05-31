@@ -8,9 +8,14 @@ import { WorkoutCard } from './WorkoutCard'
 type HistoryViewProps = {
   workouts: Workout[]
   exercises: Exercise[]
+  onEditWorkout: (workout: Workout) => void
 }
 
-export function HistoryView({ workouts, exercises }: HistoryViewProps) {
+export function HistoryView({
+  workouts,
+  exercises,
+  onEditWorkout,
+}: HistoryViewProps) {
   const today = todayKey()
   const historyGroups = groupWorkoutsByDay(workouts).filter(
     (g) => isBeforeAppDay(g.date, today),
@@ -29,7 +34,12 @@ export function HistoryView({ workouts, exercises }: HistoryViewProps) {
 
   return (
     <div className="space-y-6">
-      <h2 className="text-lg font-semibold text-slate-900">History</h2>
+      <div>
+        <h2 className="text-lg font-semibold text-slate-900">History</h2>
+        <p className="mt-1 text-sm text-slate-500">
+          Tap a row to edit. Pick the catalog exercise so carry-over uses the right id.
+        </p>
+      </div>
       {historyGroups.map((group) => (
         <section key={group.date}>
           <h3 className="mb-2 text-sm font-medium text-slate-700">
@@ -48,8 +58,10 @@ export function HistoryView({ workouts, exercises }: HistoryViewProps) {
                 <WorkoutCard
                   key={workout.id}
                   workout={workout}
+                  exercises={exercises}
                   description={exercise?.description}
                   isToday={false}
+                  onOpen={() => onEditWorkout(workout)}
                 />
               )
             })}
