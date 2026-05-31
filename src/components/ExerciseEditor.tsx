@@ -63,6 +63,7 @@ export function ExerciseEditor({
     mode === 'add' && !workout && !initialExerciseId,
   )
   const [error, setError] = useState<string | null>(null)
+  const [showExercise, setShowExercise] = useState(false)
 
   const catalogSorted = useMemo(
     () =>
@@ -278,11 +279,20 @@ export function ExerciseEditor({
         )}
 
         {selectedExercise?.description && (
-          <div className="rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-sm text-slate-600">
-            <p className="text-xs font-medium text-slate-500">
-              How to do it (from catalog)
-            </p>
-            <p className="mt-1 whitespace-pre-wrap">{selectedExercise.description}</p>
+          <div>
+            <button
+              type="button"
+              onClick={() => setShowExercise((open) => !open)}
+              className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+              aria-expanded={showExercise}
+            >
+              {showExercise ? 'Hide exercise' : 'Show exercise'}
+            </button>
+            {showExercise && (
+              <p className="mt-2 whitespace-pre-wrap rounded-lg border border-slate-100 bg-slate-50 px-3 py-2 text-sm text-slate-600">
+                {selectedExercise.description}
+              </p>
+            )}
           </div>
         )}
 

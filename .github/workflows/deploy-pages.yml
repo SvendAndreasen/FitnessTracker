@@ -6,6 +6,8 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
+  # Manual run: Actions → this workflow → Run workflow → Branch must be **main**
+  # (not gh-pages — that branch only has built HTML, no .github/workflows).
   workflow_dispatch:
 
 permissions:

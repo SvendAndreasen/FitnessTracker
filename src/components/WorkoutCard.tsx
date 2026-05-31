@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { findExerciseById } from '../lib/exerciseStorage'
 import type { Exercise } from '../types/exercise'
 import type { Workout } from '../types/workout'
@@ -31,6 +32,7 @@ export function WorkoutCard({
   onOpen,
   onDelete,
 }: WorkoutCardProps) {
+  const [showExercise, setShowExercise] = useState(false)
   const details = detailParts(workout)
   const catalogLinked =
     !!workout.exerciseId &&
@@ -39,59 +41,73 @@ export function WorkoutCard({
   return (
     <li className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-        <button
-          type="button"
-          onClick={onOpen}
-          disabled={!onOpen}
-          className="min-w-0 flex-1 text-left focus:outline-none focus:ring-2 focus:ring-emerald-500/30 disabled:cursor-default rounded-lg"
-        >
-          <div className="flex flex-wrap items-center gap-2">
-            <h3 className="font-semibold text-slate-900">{workout.exerciseName}</h3>
-            {isPending && (
-              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
-                Not logged yet
-              </span>
+        <div className="min-w-0 flex-1">
+          <button
+            type="button"
+            onClick={onOpen}
+            disabled={!onOpen}
+            className="w-full text-left focus:outline-none focus:ring-2 focus:ring-emerald-500/30 disabled:cursor-default rounded-lg"
+          >
+            <div className="flex flex-wrap items-center gap-2">
+              <h3 className="font-semibold text-slate-900">{workout.exerciseName}</h3>
+              {isPending && (
+                <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                  Not logged yet
+                </span>
+              )}
+              {isToday && !isPending && workout.carriedFrom && (
+                <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800">
+                  From last session
+                </span>
+              )}
+              {isToday && !isPending && !workout.carriedFrom && (
+                <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
+                  Logged
+                </span>
+              )}
+              {!isToday && !catalogLinked && (
+                <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700">
+                  Fix exercise link
+                </span>
+              )}
+            </div>
+            {isPending && details.length === 0 && (
+              <p className="mt-1 text-sm text-slate-500">Tap to log sets and weight</p>
             )}
-            {isToday && !isPending && workout.carriedFrom && (
-              <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800">
-                From last session
-              </span>
+            {details.length > 0 && (
+              <p className="mt-1 text-sm text-slate-600">{details.join(' · ')}</p>
             )}
-            {isToday && !isPending && !workout.carriedFrom && (
-              <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
-                Logged
-              </span>
+            {workout.comment && (
+              <p className="mt-2 line-clamp-3 text-sm text-slate-600">
+                <span className="text-xs font-medium text-slate-400">Comment: </span>
+                {workout.comment}
+              </p>
             )}
-            {!isToday && !catalogLinked && (
-              <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700">
-                Fix exercise link
-              </span>
+            {onOpen && (
+              <p className="mt-2 text-xs font-medium text-emerald-700">
+                {isPending ? 'Tap to log' : 'Tap to edit'}
+              </p>
             )}
-          </div>
-          {isPending && details.length === 0 && (
-            <p className="mt-1 text-sm text-slate-500">Tap to log sets and weight</p>
-          )}
-          {details.length > 0 && (
-            <p className="mt-1 text-sm text-slate-600">{details.join(' · ')}</p>
-          )}
+          </button>
+
           {description && (
-            <p className="mt-2 line-clamp-2 text-sm text-slate-500">
-              <span className="text-xs font-medium text-slate-400">How to: </span>
-              {description}
-            </p>
+            <div className="mt-2">
+              <button
+                type="button"
+                onClick={() => setShowExercise((open) => !open)}
+                className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+                aria-expanded={showExercise}
+              >
+                {showExercise ? 'Hide exercise' : 'Show exercise'}
+              </button>
+              {showExercise && (
+                <p className="mt-2 whitespace-pre-wrap text-sm text-slate-600">
+                  {description}
+                </p>
+              )}
+            </div>
           )}
-          {workout.comment && (
-            <p className="mt-2 line-clamp-3 text-sm text-slate-600">
-              <span className="text-xs font-medium text-slate-400">Comment: </span>
-              {workout.comment}
-            </p>
-          )}
-          {onOpen && (
-            <p className="mt-2 text-xs font-medium text-emerald-700">
-              {isPending ? 'Tap to log' : 'Tap to edit'}
-            </p>
-          )}
-        </button>
+        </div>
         {isToday && onDelete && (
           <button
             type="button"

@@ -19,7 +19,29 @@ This appears when **Pages → Source** is set to **GitHub Actions**, but GitHub 
 3. If asked to pick a workflow, choose **Deploy to GitHub Pages**
 4. Push any commit to `main`, or run **Actions** → **Deploy to GitHub Pages** → **Run workflow**
 
-Do **not** use branch **`main`** as the source. Use **GitHub Actions**, or **Deploy from a branch** with **`gh-pages`** only.
+Do **not** use branch **`main`** as the Pages **source**. Use **GitHub Actions**, or **Deploy from a branch** with **`gh-pages`** only.
+
+### “No workflow dispatch on this branch” / ingen dispatch på den branch
+
+GitHub shows this when you click **Run workflow** and choose the wrong **branch** in the dropdown.
+
+| Branch | Can you run **Deploy to GitHub Pages** from it? |
+|--------|--------------------------------------------------|
+| **`main`** | Yes — workflow file lives here |
+| **`gh-pages`** | **No** — only built site files (`index.html`, `assets/`), no `.github/workflows` |
+| Feature branches | Only if that branch contains `.github/workflows/deploy-pages.yml` |
+
+**Fix:**
+
+1. Open the **Actions** tab (not Settings → Actions).
+2. Left sidebar → **Deploy to GitHub Pages**.
+3. **Run workflow** → set **Branch** to **`main`** → **Run workflow**.
+
+Do **not** pick **`gh-pages`** for manual runs. After a successful deploy, Pages can still **serve** from `gh-pages` (branch source) or from the Actions artifact — that is separate from which branch you use to **run** the workflow.
+
+#### Dansk (kort)
+
+Fejlen *“der ikke er en dispatch på den branch”* betyder næsten altid, at du har valgt **`gh-pages`** under **Run workflow**. Vælg **`main`** i stedet. Workflow-filer ligger på `main`, ikke på `gh-pages`.
 
 ---
 
