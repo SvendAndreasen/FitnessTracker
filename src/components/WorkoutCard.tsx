@@ -1,11 +1,15 @@
+import { findExerciseById } from '../lib/exerciseStorage'
+import type { Exercise } from '../types/exercise'
 import type { Workout } from '../types/workout'
 
 type WorkoutCardProps = {
   workout: Workout
+  exercises?: Exercise[]
   description?: string
   isToday: boolean
+  isPending?: boolean
   onOpen?: () => void
-  onDelete?: (id: string) => void
+  onDelete?: () => void
 }
 
 function detailParts(workout: Workout): string[] {
@@ -20,12 +24,17 @@ function detailParts(workout: Workout): string[] {
 
 export function WorkoutCard({
   workout,
+  exercises,
   description,
   isToday,
+  isPending = false,
   onOpen,
   onDelete,
 }: WorkoutCardProps) {
   const details = detailParts(workout)
+  const catalogLinked =
+    !!workout.exerciseId &&
+    (!exercises || !!findExerciseById(exercises, workout.exerciseId))
 
   return (
     <li className="rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
@@ -38,17 +47,30 @@ export function WorkoutCard({
         >
           <div className="flex flex-wrap items-center gap-2">
             <h3 className="font-semibold text-slate-900">{workout.exerciseName}</h3>
-            {isToday && workout.carriedFrom && (
+            {isPending && (
+              <span className="rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-600">
+                Not logged yet
+              </span>
+            )}
+            {isToday && !isPending && workout.carriedFrom && (
               <span className="rounded-full bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-800">
                 From last session
               </span>
             )}
-            {isToday && !workout.carriedFrom && (
+            {isToday && !isPending && !workout.carriedFrom && (
               <span className="rounded-full bg-emerald-50 px-2 py-0.5 text-xs font-medium text-emerald-700">
                 Logged
               </span>
             )}
+            {!isToday && !catalogLinked && (
+              <span className="rounded-full bg-red-50 px-2 py-0.5 text-xs font-medium text-red-700">
+                Fix exercise link
+              </span>
+            )}
           </div>
+          {isPending && details.length === 0 && (
+            <p className="mt-1 text-sm text-slate-500">Tap to log sets and weight</p>
+          )}
           {details.length > 0 && (
             <p className="mt-1 text-sm text-slate-600">{details.join(' · ')}</p>
           )}
@@ -64,14 +86,16 @@ export function WorkoutCard({
               {workout.comment}
             </p>
           )}
-          {isToday && onOpen && (
-            <p className="mt-2 text-xs font-medium text-emerald-700">Tap to edit</p>
+          {onOpen && (
+            <p className="mt-2 text-xs font-medium text-emerald-700">
+              {isPending ? 'Tap to log' : 'Tap to edit'}
+            </p>
           )}
         </button>
         {isToday && onDelete && (
           <button
             type="button"
-            onClick={() => onDelete(workout.id)}
+            onClick={onDelete}
             className="shrink-0 self-start rounded-lg border border-slate-200 px-3 py-1.5 text-sm font-medium text-slate-600 transition hover:border-red-200 hover:bg-red-50 hover:text-red-700"
           >
             Skip
