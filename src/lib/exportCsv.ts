@@ -40,6 +40,7 @@ export function workoutsToCsv(workouts: Workout[], today: string): string {
     'duration_minutes',
     'status',
     'carried_from',
+    'comment',
   ]
 
   const sorted = [...workouts].sort((a, b) => {
@@ -60,6 +61,7 @@ export function workoutsToCsv(workouts: Workout[], today: string): string {
       formatCsvCell(w.durationMinutes),
       formatCsvCell(statusLabel(w, today)),
       formatCsvCell(w.carriedFrom ?? ''),
+      formatCsvCell(w.comment ?? ''),
     ].join(','),
   )
 

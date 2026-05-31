@@ -1,17 +1,21 @@
 import type { Workout } from '../types/workout'
 
+/** Legacy workout row text; used when building the exercise catalog from old saves. */
 export function getDescription(workout: Workout): string | undefined {
   return workout.description?.trim() || workout.notes?.trim() || undefined
 }
 
 export function normalizeWorkout(workout: Workout): Workout {
-  const description = getDescription(workout)
   const rest = { ...workout }
+  const legacyText = getDescription(workout)
   delete rest.notes
-  if (description) {
-    rest.description = description
+  delete rest.description
+
+  let comment = rest.comment?.trim() || legacyText || undefined
+  if (comment) {
+    rest.comment = comment
   } else {
-    delete rest.description
+    delete rest.comment
   }
   return rest
 }

@@ -7,7 +7,7 @@ export type CatalogExportSummary = {
 }
 
 export function exercisesToCsv(exercises: Exercise[]): string {
-  const headers = ['exercise_id', 'name', 'description', 'active']
+  const headers = ['exercise_id', 'name', 'active', 'description']
 
   const sorted = [...exercises].sort((a, b) =>
     a.name.localeCompare(b.name, undefined, { sensitivity: 'base' }),
@@ -17,8 +17,8 @@ export function exercisesToCsv(exercises: Exercise[]): string {
     [
       formatCsvCell(e.id),
       formatCsvCell(e.name),
-      formatCsvCell(e.description ?? ''),
       formatCsvCell(e.active),
+      formatCsvCell(e.description ?? ''),
     ].join(','),
   )
 

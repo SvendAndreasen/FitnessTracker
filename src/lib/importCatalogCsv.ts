@@ -79,7 +79,7 @@ export function importCatalogFromCsv(
 
   const columnKeys = hasHeader
     ? headerRow.map((h) => HEADER_MAP[h])
-    : (['name', 'description', 'active'] as const)
+    : (['name', 'active', 'description'] as const)
 
   const errors: string[] = []
   let added = 0

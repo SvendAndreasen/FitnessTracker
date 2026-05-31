@@ -53,7 +53,16 @@ export function WorkoutCard({
             <p className="mt-1 text-sm text-slate-600">{details.join(' · ')}</p>
           )}
           {description && (
-            <p className="mt-2 line-clamp-2 text-sm text-slate-500">{description}</p>
+            <p className="mt-2 line-clamp-2 text-sm text-slate-500">
+              <span className="text-xs font-medium text-slate-400">How to: </span>
+              {description}
+            </p>
+          )}
+          {workout.comment && (
+            <p className="mt-2 line-clamp-3 text-sm text-slate-600">
+              <span className="text-xs font-medium text-slate-400">Comment: </span>
+              {workout.comment}
+            </p>
           )}
           {isToday && onOpen && (
             <p className="mt-2 text-xs font-medium text-emerald-700">Tap to edit</p>
